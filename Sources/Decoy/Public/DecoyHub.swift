@@ -1,0 +1,67 @@
+import Foundation
+
+/// The `Decoy` enum is the core of the library, and allows you to queue stubbed responses
+/// to calls to specific endpoints via the `queue` and `queueValidResponse` methods.
+public class DecoyHub {
+
+  public struct Constants {
+    public static let isXCUI = "MOCKMARKS_IS_XCUI"
+    public static let isRecording = "MOCKMARKS_IS_RECORDING"
+    public static let stubDirectory = "MOCKMARKS_MOCK_DIRECTORY"
+    public static let stubFilename = "MOCKMARKS_MOCK_FILENAME"
+    public static let stubsFolder = "__Mocks__"
+  }
+
+  /// Singleton used to access Decoy from the outside without the need to instantiate it.
+  public static let shared = DecoyHub()
+
+  /// Performs initial setup for Decoy. Should be called as soon as possible after your app launches
+  /// so that calls made immediately following app launch can be stubbed, if required. Early exits
+  /// immediately if not in the context of UI testing to avoid unnecessary processing.
+  ///
+  /// - Parameters:
+  ///   - processInfo: An injectable instance of `ProcessInfo` used to check environment variables.
+  public func setUp(session: SessionInterface, processInfo: ProcessInfo = .processInfo) {
+    self.session = session
+
+    guard isXCUI(processInfo: processInfo) else { return }
+    guard let directory = processInfo.environment[DecoyHub.Constants.stubDirectory] else { return }
+    guard let filename = processInfo.environment[DecoyHub.Constants.stubFilename] else { return }
+
+    var url = URL(safePath: directory)
+    url.safeAppend(path: filename)
+
+    guard let json = loader.loadJSON(from: url) else { return }
+
+    json.forEach {
+      queue.queue(decoy: Decoy(url: $0.url, response: $0.response))
+    }
+  }
+
+  /// Used to ascertain whether or not Decoy is currently running within the context of a `DecoyUITestCase`.
+  public func isXCUI(processInfo: ProcessInfo = .processInfo) -> Bool {
+    processInfo.environment[Constants.isXCUI] == String(true)
+  }
+
+  /// A `URLSession` set to this variable will have its scheduled data tasks checked for suitable stubs.
+  public var session: SessionInterface?
+
+  /// A queue, handling the management of responses into and out of the response queue.
+  var queue: QueueInterface = Queue()
+
+  /// A loader, used to read data from a JSON stub file and parse it into a stubbed response.
+  var loader: LoaderInterface = Loader()
+
+  /// A recorder, used to write recorded stubs out to disk.
+  var recorder: RecorderInterface = Recorder()
+
+  /// Dispatches the next queued response for the provided URL. Checks the queued response array for responses
+  /// matching the given URL, and returns and removes the most recently added.
+  ///
+  /// - Parameters:
+  ///   - url: The url for which the next queued `response` will return.
+  ///   - completion: A closure to be called with the queued response.
+  func dispatchNextQueuedResponse(for url: URL, to completion: @escaping DataTask.CompletionHandler) -> Bool {
+    queue.dispatchNextQueuedResponse(for: url, to: completion)
+  }
+}
