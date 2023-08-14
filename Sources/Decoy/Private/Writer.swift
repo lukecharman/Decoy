@@ -43,10 +43,10 @@ class Writer: WriterInterface {
 private extension Writer {
 
   var path: String? {
-    processInfo.environment[DecoyHub.Constants.stubDirectory]
+    processInfo.environment[DecoyHub.Constants.decoyPath]
   }
 
   var file: String? {
-    processInfo.environment[DecoyHub.Constants.stubFilename]
+    processInfo.environment[DecoyHub.Constants.decoyFilename]
   }
 }

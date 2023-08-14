@@ -10,7 +10,7 @@ class MockProcessInfo: ProcessInfo {
       return stubbedEnvironment
     } else {
       return [
-        DecoyHub.Constants.stubDirectory: "DecoyTests",
+        DecoyHub.Constants.decoyPath: "DecoyTests",
         DecoyHub.Constants.isXCUI: String(stubbedIsRunningXCUI)
       ]
     }

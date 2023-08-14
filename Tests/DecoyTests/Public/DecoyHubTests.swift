@@ -32,7 +32,7 @@ final class DecoyHubTests: XCTestCase {
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
       DecoyHub.Constants.isXCUI: String(true),
-      DecoyHub.Constants.stubFilename: "B"
+      DecoyHub.Constants.decoyFilename: "B"
     ]
     DecoyHub.shared.setUp(session: Session(), processInfo: processInfo)
     XCTAssert(DecoyHub.shared.queue.queuedResponses.isEmpty)
@@ -42,7 +42,7 @@ final class DecoyHubTests: XCTestCase {
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
       DecoyHub.Constants.isXCUI: String(true),
-      DecoyHub.Constants.stubDirectory: "B"
+      DecoyHub.Constants.decoyPath: "B"
     ]
     DecoyHub.shared.setUp(session: Session(), processInfo: processInfo)
     XCTAssert(DecoyHub.shared.queue.queuedResponses.isEmpty)
@@ -55,8 +55,8 @@ final class DecoyHubTests: XCTestCase {
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
       DecoyHub.Constants.isXCUI: String(true),
-      DecoyHub.Constants.stubDirectory: dir!.absoluteString,
-      DecoyHub.Constants.stubFilename: "LoaderTests.json"
+      DecoyHub.Constants.decoyPath: dir!.absoluteString,
+      DecoyHub.Constants.decoyFilename: "LoaderTests.json"
     ]
 
     DecoyHub.shared.setUp(session: Session(), processInfo: processInfo)

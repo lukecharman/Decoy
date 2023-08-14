@@ -5,11 +5,11 @@ import Foundation
 public class DecoyHub {
 
   public struct Constants {
-    public static let isXCUI = "MOCKMARKS_IS_XCUI"
-    public static let isRecording = "MOCKMARKS_IS_RECORDING"
-    public static let stubDirectory = "MOCKMARKS_MOCK_DIRECTORY"
-    public static let stubFilename = "MOCKMARKS_MOCK_FILENAME"
-    public static let stubsFolder = "__Mocks__"
+    public static let isXCUI = "DECOY_IS_XCUI"
+    public static let isRecording = "DECOY_IS_RECORDING"
+    public static let decoyPath = "DECOY_PATH"
+    public static let decoyFilename = "DECOY_FILENAME"
+    public static let decoysFolder = "__Decoys__"
   }
 
   /// Singleton used to access Decoy from the outside without the need to instantiate it.
@@ -25,8 +25,8 @@ public class DecoyHub {
     self.session = session
 
     guard isXCUI(processInfo: processInfo) else { return }
-    guard let directory = processInfo.environment[DecoyHub.Constants.stubDirectory] else { return }
-    guard let filename = processInfo.environment[DecoyHub.Constants.stubFilename] else { return }
+    guard let directory = processInfo.environment[DecoyHub.Constants.decoyPath] else { return }
+    guard let filename = processInfo.environment[DecoyHub.Constants.decoyFilename] else { return }
 
     var url = URL(safePath: directory)
     url.safeAppend(path: filename)
