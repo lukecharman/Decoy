@@ -55,6 +55,16 @@ public class Decoy {
   /// A `URLSession` set to this variable will have its scheduled data tasks checked for suitable stubs.
   public var session: SessionInterface?
 
+  /// Used to ascertain the testing mode in which Decoy is running.
+  /// Defaults to `.stubbing` if not found.
+  func mode(processInfo: ProcessInfo = .processInfo) -> DecoyTestMode {
+    guard let modeString = processInfo.environment[Constants.decoyMode] else {
+      return .stubbing
+    }
+
+    return DecoyTestMode(rawValue: modeString) ?? .stubbing
+  }
+
   /// A queue, handling the management of responses into and out of the response queue.
   var queue: QueueInterface = Queue()
 

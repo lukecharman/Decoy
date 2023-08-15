@@ -35,9 +35,9 @@ class DataTask: URLSessionDataTask {
   /// not provided, the superclass will handle the function. We also need to be running UI tests to
   /// proceed with the custom implementation, so we don't interfere with the real app.
   func resume(processInfo: ProcessInfo = .processInfo) {
-    guard let url = task.currentRequest?.url, Decoy.shared.isXCUI(processInfo: processInfo) else {
-      return task.resume()
-    }
+    guard Decoy.shared.isXCUI(processInfo: processInfo) else { return task.resume() }
+    guard Decoy.shared.mode() == .stubbing else { return task.resume() }
+    guard let url = task.currentRequest?.url else { return task.resume() }
 
     /// Ask Decoy to stub the call. If it has a queued response, it will call the completion
     /// handler. If not, tell the task to resume using the superclass's implementation of `resume`,
