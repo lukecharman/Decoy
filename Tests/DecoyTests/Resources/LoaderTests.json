@@ -1,6 +1,7 @@
 [
   {
     "url": "https://testing-some-json",
+    "recordedAt": "2023-08-15T11:37:08+0000",
     "stub": {
       "json": [
         "MOCKED OR WHATEVER"

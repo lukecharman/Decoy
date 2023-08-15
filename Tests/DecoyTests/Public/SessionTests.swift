@@ -11,7 +11,7 @@ final class SessionTests: XCTestCase {
     super.setUp()
     stubURLSession = MockSession()
     Decoy.shared.recorder.recordings.removeAll()
-    stubMarksSession = Session(stubing: stubURLSession)
+    stubMarksSession = Session(stubbing: stubURLSession)
   }
 
   override func tearDown() {
@@ -39,7 +39,7 @@ final class SessionTests: XCTestCase {
   // MARK: - init
 
   func test_init_shouldStoreURLSession() {
-    let sut = Session(stubing: .shared)
+    let sut = Session(stubbing: .shared)
     XCTAssertIdentical(sut.urlSession, URLSession.shared)
   }
 
@@ -104,7 +104,7 @@ private class MockSession: URLSession {
   ) -> URLSessionDataTask {
     didCallDataTaskWithURLRequest = true
     let task = URLSession.shared.dataTask(with: request, completionHandler: completionHandler)
-    return MockDataTask(stubing: task, completionHandler: completionHandler)
+    return MockDataTask(stubbing: task, completionHandler: completionHandler)
   }
 
   override func dataTask(
@@ -113,13 +113,13 @@ private class MockSession: URLSession {
   ) -> URLSessionDataTask {
     didCallDataTaskWithURL = true
     let task = URLSession.shared.dataTask(with: url, completionHandler: completionHandler)
-    return MockDataTask(stubing: task, completionHandler: completionHandler)
+    return MockDataTask(stubbing: task, completionHandler: completionHandler)
   }
 }
 
 private class MockDataTask: DataTask {
-  override init(stubing task: URLSessionDataTask, completionHandler: @escaping DataTask.CompletionHandler) {
-    super.init(stubing: task, completionHandler: completionHandler)
+  override init(stubbing task: URLSessionDataTask, completionHandler: @escaping DataTask.CompletionHandler) {
+    super.init(stubbing: task, completionHandler: completionHandler)
     completionHandler(("Test".data(using: .utf16)!, nil, nil))
   }
 }

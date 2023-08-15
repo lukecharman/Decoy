@@ -46,10 +46,10 @@ public class Decoy {
   public var session: SessionInterface?
 
   /// A queue, handling the management of responses into and out of the response queue.
-  private var queue: QueueInterface = Queue()
+  var queue: QueueInterface = Queue()
 
   /// A loader, used to read data from a JSON stub file and parse it into a stubbed response.
-  private var loader: LoaderInterface = Loader()
+  var loader: LoaderInterface = Loader()
 
   /// A recorder, used to write recorded stubs out to disk.
   var recorder: RecorderInterface = Recorder()

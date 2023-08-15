@@ -3,7 +3,6 @@ import XCTest
 @testable import Decoy
 
 final class DecoyTests: XCTestCase {
-
   override func setUp() {
     super.setUp()
     Decoy.shared.queue.queuedResponses.removeAll()
@@ -65,10 +64,11 @@ final class DecoyTests: XCTestCase {
 
   func test_dispatchNextQueuedResponse_shouldCallCompletion() {
     guard let data = try? JSONSerialization.data(withJSONObject: ["A": "B"]) else { return XCTFail(#function) }
-    let response = Decoy.Response(data: data, urlResponse: nil, error: nil)
-    let decoy = Decoy(url: url, response: response)
 
-    Decoy.shared.queue.queue(decoy: decoy)
+    let response = Stub.Response(data: data, urlResponse: nil, error: nil)
+    let stub = Stub(url: url, recordedAt: "2023-08-15T11:37:08+0000", response: response)
+
+    Decoy.shared.queue.queue(stub: stub)
     _ = Decoy.shared.dispatchNextQueuedResponse(for: url) { data, _, _ in
       guard let json = try? JSONSerialization.jsonObject(with: data!, options: []) as? [String: Any] else {
         return XCTFail(#function)
@@ -82,7 +82,6 @@ final class DecoyTests: XCTestCase {
 }
 
 private extension DecoyTests {
-
   var url: URL {
     URL(string: "A")!
   }
