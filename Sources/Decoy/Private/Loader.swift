@@ -20,6 +20,7 @@ struct Loader: LoaderInterface {
     static let httpVersion = "httpVersion"
     static let headerFields = "headerFields"
     static let recordedAt = "recordedAt"
+    static let expiresAt = "expiresAt"
   }
   
   /// Looks for a JSON file at the given URL, and decodes its contents into an array of stubbed responses.
@@ -43,11 +44,12 @@ private extension Loader {
     guard let stub = json[Constants.stub] as? StubDictionary else { return nil }
     guard let recordedAt = recordedAt(from: json) else { return nil }
 
+    let expiresAt = expiresAt(from: json)
     let data = data(from: stub)
     let urlResponse = urlResponse(to: url, from: stub)
     let response = Stub.Response(data: data, urlResponse: urlResponse, error: nil)
 
-    return Stub(url: url, recordedAt: recordedAt, response: response)
+    return Stub(url: url, recordedAt: recordedAt, expiresAt: expiresAt, response: response)
   }
 
   func data(from stub: StubDictionary) -> Data? {
@@ -70,5 +72,9 @@ private extension Loader {
 
   func recordedAt(from stub: StubDictionary) -> String? {
     stub[Constants.recordedAt] as? String
+  }
+
+  func expiresAt(from stub: StubDictionary) -> String? {
+    stub[Constants.expiresAt] as? String
   }
 }

@@ -34,6 +34,35 @@ class Recorder: RecorderInterface {
     return modeType.isRecording
   }
 
+  func daysToLive() -> Int? {
+    guard let modeString = processInfo.environment[Decoy.Constants.decoyMode] else {
+      return nil
+    }
+
+    guard let modeType = Decoy.TestMode(string: modeString) else {
+      return nil
+    }
+
+    switch modeType {
+    case .recording(let int):
+      return int == 0 ? nil : int
+    default:
+      return nil
+    }
+  }
+
+  var expiresAt: String? {
+    guard let daysToLive = daysToLive() else {
+      return nil
+    }
+
+    if let futureDate = Calendar.autoupdatingCurrent.date(byAdding: .day, value: daysToLive, to: Date()) {
+      return ISO8601DateFormatter().string(from: futureDate)
+    } else {
+      return nil
+    }
+  }
+
   /// Makes a recording of the provided data, response, and error to the specifed URL.
   ///
   /// - Parameters:
@@ -45,6 +74,7 @@ class Recorder: RecorderInterface {
     let decoy = Stub(
       url: url,
       recordedAt: ISO8601DateFormatter().string(from: Date()),
+      expiresAt: expiresAt,
       response: Stub.Response(
         data: data,
         urlResponse: response as? HTTPURLResponse,

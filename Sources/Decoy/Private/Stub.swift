@@ -6,6 +6,8 @@ struct Stub {
   let url: URL
   /// A timestamp for when this stub was recorded.
   let recordedAt: String
+  /// An optional timestamp after which the stub should be considered invalid or expired.
+  let expiresAt: String?
   /// The stubbed response which will be returned to the `Response`'s `url`.
   let response: Response
 
@@ -30,6 +32,10 @@ struct Stub {
 
     json["url"] = url.absoluteString
     json["recordedAt"] = recordedAt
+
+    if let expiresAt {
+      json["expiresAt"] = expiresAt
+    }
 
     var stub = [String: Any]()
 
