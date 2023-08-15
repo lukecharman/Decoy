@@ -36,6 +36,7 @@ class Recorder: RecorderInterface {
   func record(url: URL, data: Data?, response: URLResponse?, error: Error?) {
     let decoy = Stub(
       url: url,
+      recordedAt: ISO8601DateFormatter().string(from: Date()),
       response: Stub.Response(
         data: data,
         urlResponse: response as? HTTPURLResponse,

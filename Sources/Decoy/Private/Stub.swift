@@ -4,6 +4,8 @@ import Foundation
 struct Stub {
   /// The URL to which queries will return the associated stub.
   let url: URL
+  /// A timestamp for when this stub was recorded.
+  let recordedAt: String
   /// The stubbed response which will be returned to the `Response`'s `url`.
   let response: Response
 
@@ -27,6 +29,7 @@ struct Stub {
     var json = [String: Any]()
 
     json["url"] = url.absoluteString
+    json["recordedAt"] = recordedAt
 
     var stub = [String: Any]()
 

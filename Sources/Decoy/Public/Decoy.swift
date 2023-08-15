@@ -33,7 +33,7 @@ public class Decoy {
     guard let json = loader.loadJSON(from: url) else { return }
 
     json.forEach {
-      queue.queue(stub: Stub(url: $0.url, response: $0.response))
+      queue.queue(stub: Stub(url: $0.url, recordedAt: $0.recordedAt, response: $0.response))
     }
   }
 

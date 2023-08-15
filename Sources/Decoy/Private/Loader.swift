@@ -19,6 +19,7 @@ struct Loader: LoaderInterface {
     static let statusCode = "statusCode"
     static let httpVersion = "httpVersion"
     static let headerFields = "headerFields"
+    static let recordedAt = "recordedAt"
   }
   
   /// Looks for a JSON file at the given URL, and decodes its contents into an array of stubbed responses.
@@ -40,12 +41,13 @@ private extension Loader {
     guard let urlString = json[Constants.url] as? String else { return nil }
     guard let url = URL(string: urlString) else { return nil }
     guard let stub = json[Constants.stub] as? DecoyDictionary else { return nil }
+    guard let recordedAt = recordedAt(from: json) else { return nil }
 
     let data = data(from: stub)
     let urlResponse = urlResponse(to: url, from: stub)
     let response = Stub.Response(data: data, urlResponse: urlResponse, error: nil)
 
-    return Stub(url: url, response: response)
+    return Stub(url: url, recordedAt: recordedAt, response: response)
   }
 
   func data(from stub: DecoyDictionary) -> Data? {
@@ -64,5 +66,9 @@ private extension Loader {
 
   func error(from stub: DecoyDictionary) -> [String: Any]? {
     return nil
+  }
+
+  func recordedAt(from stub: DecoyDictionary) -> String? {
+    stub[Constants.recordedAt] as? String
   }
 }
