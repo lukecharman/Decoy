@@ -5,8 +5,8 @@ protocol LoaderInterface {
 }
 
 /// Simple typealiases used to make this structure cleaner to read.
-private typealias DecoyDictionary = [String: Any]
-private typealias DecoyArray = [DecoyDictionary]
+private typealias StubDictionary = [String: Any]
+private typealias StubArray = [StubDictionary]
 
 /// Used to load stubs from JSON files, and decode them.
 struct Loader: LoaderInterface {
@@ -27,11 +27,11 @@ struct Loader: LoaderInterface {
   /// - Parameters:
   ///   - url: The location at which to look for a JSON file containing ordered, stubbed responses.
   ///
-  /// - Returns: An optional array of `Decoy`s, read sequentially from the named JSON.
+  /// - Returns: An optional array of `Stub`s, read sequentially from the named JSON.
   func loadJSON(from url: URL) -> [Stub]? {
     guard let data = try? Data(contentsOf: url) else { return nil }
-    guard let json = try? JSONSerialization.jsonObject(with: data) as? DecoyArray else { return nil }
-    
+    guard let json = try? JSONSerialization.jsonObject(with: data) as? StubArray else { return nil }
+
     return json.compactMap { stub(from: $0) }
   }
 }
@@ -40,7 +40,7 @@ private extension Loader {
   func stub(from json: [String: Any]) -> Stub? {
     guard let urlString = json[Constants.url] as? String else { return nil }
     guard let url = URL(string: urlString) else { return nil }
-    guard let stub = json[Constants.stub] as? DecoyDictionary else { return nil }
+    guard let stub = json[Constants.stub] as? StubDictionary else { return nil }
     guard let recordedAt = recordedAt(from: json) else { return nil }
 
     let data = data(from: stub)
@@ -50,12 +50,12 @@ private extension Loader {
     return Stub(url: url, recordedAt: recordedAt, response: response)
   }
 
-  func data(from stub: DecoyDictionary) -> Data? {
+  func data(from stub: StubDictionary) -> Data? {
     guard let json = stub[Constants.json] else { return nil }
     return try? JSONSerialization.data(withJSONObject: json)
   }
 
-  func urlResponse(to url: URL, from stub: DecoyDictionary) -> HTTPURLResponse? {
+  func urlResponse(to url: URL, from stub: StubDictionary) -> HTTPURLResponse? {
     HTTPURLResponse(
       url: url,
       statusCode: stub[Constants.statusCode] as? Int ?? 200,
@@ -64,11 +64,11 @@ private extension Loader {
     )
   }
 
-  func error(from stub: DecoyDictionary) -> [String: Any]? {
+  func error(from stub: StubDictionary) -> [String: Any]? {
     return nil
   }
 
-  func recordedAt(from stub: DecoyDictionary) -> String? {
+  func recordedAt(from stub: StubDictionary) -> String? {
     stub[Constants.recordedAt] as? String
   }
 }

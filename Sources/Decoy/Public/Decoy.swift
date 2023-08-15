@@ -1,24 +1,25 @@
 import Foundation
 
-/// Enum listing modes in which tests can be run.
-public enum DecoyTestMode: String {
-  /// Stubs will be captured and recorded. Tests will always fail in this mode.
-  case recording
-  /// Stubs will be used where provided, and live calls made where not provided.
-  case stubbing
-  /// Stubs will be ignored, and live network requests will be made throughout.
-  case live
-}
-
 /// The `Decoy` class is the core of the library, and allows you to queue stubbed responses
 /// to calls to specific endpoints via the `queue` and `queueValidResponse` methods.
 public class Decoy {
+  /// Constants used to communicate between the XCUI target and the app target via environment variables.
   public struct Constants {
     public static let isXCUI = "DECOY_IS_XCUI"
     public static let decoyMode = "DECOY_MODE"
     public static let decoyPath = "DECOY_PATH"
     public static let decoyFilename = "DECOY_FILENAME"
     public static let decoysFolder = "__Decoys__"
+  }
+
+  /// Enum listing modes in which tests can be run.
+  public enum TestMode: String {
+    /// Stubs will be captured and recorded. Tests will always fail in this mode.
+    case recording
+    /// Stubs will be used where provided, and live calls made where not provided.
+    case stubbing
+    /// Stubs will be ignored, and live network requests will be made throughout.
+    case live
   }
 
   /// Singleton used to access Decoy from the outside without the need to instantiate it.
@@ -57,12 +58,12 @@ public class Decoy {
 
   /// Used to ascertain the testing mode in which Decoy is running.
   /// Defaults to `.stubbing` if not found.
-  func mode(processInfo: ProcessInfo = .processInfo) -> DecoyTestMode {
+  func mode(processInfo: ProcessInfo = .processInfo) -> Decoy.TestMode {
     guard let modeString = processInfo.environment[Constants.decoyMode] else {
       return .stubbing
     }
 
-    return DecoyTestMode(rawValue: modeString) ?? .stubbing
+    return Decoy.TestMode(rawValue: modeString) ?? .stubbing
   }
 
   /// A queue, handling the management of responses into and out of the response queue.

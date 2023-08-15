@@ -27,7 +27,7 @@ class Recorder: RecorderInterface {
       return false
     }
 
-    guard let modeType = DecoyTestMode(rawValue: modeString) else {
+    guard let modeType = Decoy.TestMode(rawValue: modeString) else {
       return false
     }
 
