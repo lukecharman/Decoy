@@ -27,11 +27,11 @@ class Recorder: RecorderInterface {
       return false
     }
 
-    guard let modeType = Decoy.TestMode(rawValue: modeString) else {
+    guard let modeType = Decoy.TestMode(string: modeString) else {
       return false
     }
 
-    return modeType == .recording
+    return modeType.isRecording
   }
 
   /// Makes a recording of the provided data, response, and error to the specifed URL.

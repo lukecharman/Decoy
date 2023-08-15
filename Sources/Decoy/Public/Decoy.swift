@@ -13,13 +13,61 @@ public class Decoy {
   }
 
   /// Enum listing modes in which tests can be run.
-  public enum TestMode: String {
+  public enum TestMode: Equatable {
     /// Stubs will be captured and recorded. Tests will always fail in this mode.
-    case recording
+    /// The associated value
+    case recording(Int)
     /// Stubs will be used where provided, and live calls made where not provided.
     case stubbing
     /// Stubs will be ignored, and live network requests will be made throughout.
     case live
+
+    /// Initialise a TestMode with its string representation from a launch environment variable.
+    ///
+    /// - Parameters:
+    ///   - string: A `String` representation of a `TestMode` written in `DecoyXCUI`.
+    init?(string: String) {
+      if string.hasPrefix("recording"), let last = string.split(separator: "_").last, let int = Int(last) {
+        self = .recording(int)
+      } else if string == "live" {
+        self = .live
+      } else if string == "stubbing" {
+        self = .stubbing
+      } else {
+        return nil
+      }
+    }
+
+    public var stringValue: String {
+      switch self {
+      case .recording(let int):
+        return "recording_\(int)"
+      case .stubbing:
+        return "stubbing"
+      case .live:
+        return "live"
+      }
+    }
+
+    public static func == (lhs: TestMode, rhs: TestMode) -> Bool {
+      switch (lhs, rhs) {
+      case (.recording(let int1), .recording(let int2)):
+        return int1 == int2
+      case (.stubbing, .stubbing), (.live, .live):
+        return true
+      default:
+        return false
+      }
+    }
+
+    public var isRecording: Bool {
+      switch self {
+      case .recording(_):
+        return true
+      default:
+        return false
+      }
+    }
   }
 
   /// Singleton used to access Decoy from the outside without the need to instantiate it.
@@ -63,7 +111,7 @@ public class Decoy {
       return .stubbing
     }
 
-    return Decoy.TestMode(rawValue: modeString) ?? .stubbing
+    return Decoy.TestMode(string: modeString) ?? .stubbing
   }
 
   /// A queue, handling the management of responses into and out of the response queue.
