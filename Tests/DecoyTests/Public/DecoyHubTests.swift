@@ -2,50 +2,50 @@ import Foundation
 import XCTest
 @testable import Decoy
 
-final class DecoyHubTests: XCTestCase {
+final class DecoyTests: XCTestCase {
 
   override func setUp() {
     super.setUp()
-    DecoyHub.shared.queue.queuedResponses.removeAll()
+    Decoy.shared.queue.queuedResponses.removeAll()
   }
 
   func test_isXCUI_shouldReferToProcessInfo_whenTrue() {
     let stubbedProcessInfo = MockProcessInfo()
     stubbedProcessInfo.stubbedIsRunningXCUI = true
-    XCTAssert(DecoyHub.shared.isXCUI(processInfo: stubbedProcessInfo))
+    XCTAssert(Decoy.shared.isXCUI(processInfo: stubbedProcessInfo))
   }
 
   func test_isXCUI_shouldReferToProcessInfo_whenFalse() {
     let stubbedProcessInfo = MockProcessInfo()
     stubbedProcessInfo.stubbedIsRunningXCUI = false
-    XCTAssertFalse(DecoyHub.shared.isXCUI(processInfo: stubbedProcessInfo))
+    XCTAssertFalse(Decoy.shared.isXCUI(processInfo: stubbedProcessInfo))
   }
 
   func test_setUp_shouldNotLoadJSON_whenXCUIIsNotRunning() {
     let processInfo = MockProcessInfo()
     processInfo.stubbedIsRunningXCUI = false
-    DecoyHub.shared.setUp(session: Session(), processInfo: processInfo)
-    XCTAssert(DecoyHub.shared.queue.queuedResponses.isEmpty)
+    Decoy.shared.setUp(session: Session(), processInfo: processInfo)
+    XCTAssert(Decoy.shared.queue.queuedResponses.isEmpty)
   }
 
   func test_setUp_shouldNotLoadJSON_whenMockDirectoryIsNotSet() {
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
-      DecoyHub.Constants.isXCUI: String(true),
-      DecoyHub.Constants.decoyFilename: "B"
+      Decoy.Constants.isXCUI: String(true),
+      Decoy.Constants.decoyFilename: "B"
     ]
-    DecoyHub.shared.setUp(session: Session(), processInfo: processInfo)
-    XCTAssert(DecoyHub.shared.queue.queuedResponses.isEmpty)
+    Decoy.shared.setUp(session: Session(), processInfo: processInfo)
+    XCTAssert(Decoy.shared.queue.queuedResponses.isEmpty)
   }
 
   func test_setUp_shouldNotQueue_whenMockFilenameIsNotSet() {
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
-      DecoyHub.Constants.isXCUI: String(true),
-      DecoyHub.Constants.decoyPath: "B"
+      Decoy.Constants.isXCUI: String(true),
+      Decoy.Constants.decoyPath: "B"
     ]
-    DecoyHub.shared.setUp(session: Session(), processInfo: processInfo)
-    XCTAssert(DecoyHub.shared.queue.queuedResponses.isEmpty)
+    Decoy.shared.setUp(session: Session(), processInfo: processInfo)
+    XCTAssert(Decoy.shared.queue.queuedResponses.isEmpty)
   }
 
   func test_setUp_shouldLoadJSON_whenURLDoesContainJSON() {
@@ -54,13 +54,13 @@ final class DecoyHubTests: XCTestCase {
 
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
-      DecoyHub.Constants.isXCUI: String(true),
-      DecoyHub.Constants.decoyPath: dir!.absoluteString,
-      DecoyHub.Constants.decoyFilename: "LoaderTests.json"
+      Decoy.Constants.isXCUI: String(true),
+      Decoy.Constants.decoyPath: dir!.absoluteString,
+      Decoy.Constants.decoyFilename: "LoaderTests.json"
     ]
 
-    DecoyHub.shared.setUp(session: Session(), processInfo: processInfo)
-    XCTAssertFalse(DecoyHub.shared.queue.queuedResponses.isEmpty)
+    Decoy.shared.setUp(session: Session(), processInfo: processInfo)
+    XCTAssertFalse(Decoy.shared.queue.queuedResponses.isEmpty)
   }
 
   func test_dispatchNextQueuedResponse_shouldCallCompletion() {
@@ -68,8 +68,8 @@ final class DecoyHubTests: XCTestCase {
     let response = Decoy.Response(data: data, urlResponse: nil, error: nil)
     let decoy = Decoy(url: url, response: response)
 
-    DecoyHub.shared.queue.queue(decoy: decoy)
-    _ = DecoyHub.shared.dispatchNextQueuedResponse(for: url) { data, _, _ in
+    Decoy.shared.queue.queue(decoy: decoy)
+    _ = Decoy.shared.dispatchNextQueuedResponse(for: url) { data, _, _ in
       guard let json = try? JSONSerialization.jsonObject(with: data!, options: []) as? [String: Any] else {
         return XCTFail(#function)
       }
@@ -81,7 +81,7 @@ final class DecoyHubTests: XCTestCase {
   }
 }
 
-private extension DecoyHubTests {
+private extension DecoyTests {
 
   var url: URL {
     URL(string: "A")!

@@ -10,7 +10,7 @@ final class SessionTests: XCTestCase {
   override func setUp() {
     super.setUp()
     stubURLSession = MockSession()
-    DecoyHub.shared.recorder.recordings.removeAll()
+    Decoy.shared.recorder.recordings.removeAll()
     stubMarksSession = Session(stubing: stubURLSession)
   }
 
@@ -59,7 +59,7 @@ final class SessionTests: XCTestCase {
   func test_dataTaskWithURLRequest_shouldNotRecordWhenRecordingIsDisabled() {
     _ = stubMarksSession.dataTask(with: url) { _, _, _ in }
     XCTAssert(stubURLSession.didCallDataTaskWithURL)
-    XCTAssert(DecoyHub.shared.recorder.recordings.isEmpty)
+    XCTAssert(Decoy.shared.recorder.recordings.isEmpty)
   }
 
   func test_dataTaskWithURLRequest_shouldRecordWhenRecordingIsEnabled() {

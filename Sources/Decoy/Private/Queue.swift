@@ -1,9 +1,9 @@
 import Foundation
 
 protocol QueueInterface {
-  var queuedResponses: [URL: [Decoy.Response]] { get set }
+  var queuedResponses: [URL: [Stub.Response]] { get set }
 
-  func queue(decoy: Decoy)
+  func queue(decoy: Stub)
   func dispatchNextQueuedResponse(for url: URL, to completion: @escaping DataTask.CompletionHandler) -> Bool
 }
 
@@ -11,14 +11,14 @@ protocol QueueInterface {
 class Queue: QueueInterface {
 
   /// A set of responses. Calls to URLs matching the keys will sequentially be stubbed with data in the response.
-  var queuedResponses = [URL: [Decoy.Response]]()
+  var queuedResponses = [URL: [Stub.Response]]()
 
   /// Queues a provided response to a given URL. With this function, you can stub the data returned, as well as the
   /// `URLResponse` and any potential `Error`s, to see how your app handles them.
   ///
   /// - Parameters:
   ///   - decoy: The `Decoy` containing URL and response information for the stub.
-  func queue(decoy: Decoy) {
+  func queue(decoy: Stub) {
     if queuedResponses[decoy.url] == nil {
       queuedResponses[decoy.url] = []
     }

@@ -30,12 +30,12 @@ you only need `import Decoy` once. To get up and running:
 ### In the app:
 * In your app, set up Decoy as soon as your app launches:
   ```
-  DecoyHub.shared.setUp(session: Session())
+  Decoy.shared.setUp(session: Session())
   ```
 * This will implicitly stub `URLSession.shared`, but you can pass in your own if you prefer.
 * When you use `URLSession` in your app, use `Decoy.session` instead:
   ```
-  ViewModel(urlSession: DecoyHub.shared.session as? URLSession ?? .shared)
+  ViewModel(urlSession: Decoy.shared.session as? URLSession ?? .shared)
   ```
   
 ### In the UI test target:

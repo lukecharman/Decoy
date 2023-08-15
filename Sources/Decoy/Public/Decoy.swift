@@ -2,8 +2,7 @@ import Foundation
 
 /// The `Decoy` enum is the core of the library, and allows you to queue stubbed responses
 /// to calls to specific endpoints via the `queue` and `queueValidResponse` methods.
-public class DecoyHub {
-
+public class Decoy {
   public struct Constants {
     public static let isXCUI = "DECOY_IS_XCUI"
     public static let isRecording = "DECOY_IS_RECORDING"
@@ -13,7 +12,7 @@ public class DecoyHub {
   }
 
   /// Singleton used to access Decoy from the outside without the need to instantiate it.
-  public static let shared = DecoyHub()
+  public static let shared = Decoy()
 
   /// Performs initial setup for Decoy. Should be called as soon as possible after your app launches
   /// so that calls made immediately following app launch can be stubbed, if required. Early exits
@@ -25,8 +24,8 @@ public class DecoyHub {
     self.session = session
 
     guard isXCUI(processInfo: processInfo) else { return }
-    guard let directory = processInfo.environment[DecoyHub.Constants.decoyPath] else { return }
-    guard let filename = processInfo.environment[DecoyHub.Constants.decoyFilename] else { return }
+    guard let directory = processInfo.environment[Decoy.Constants.decoyPath] else { return }
+    guard let filename = processInfo.environment[Decoy.Constants.decoyFilename] else { return }
 
     var url = URL(safePath: directory)
     url.safeAppend(path: filename)
@@ -34,7 +33,7 @@ public class DecoyHub {
     guard let json = loader.loadJSON(from: url) else { return }
 
     json.forEach {
-      queue.queue(decoy: Decoy(url: $0.url, response: $0.response))
+      queue.queue(decoy: Stub(url: $0.url, response: $0.response))
     }
   }
 

@@ -23,7 +23,7 @@ class Recorder: RecorderInterface {
   /// Whether or not the app is running in the context of recording tests, as determined by
   /// the provided `ProcessInfo` object's launch environment..
   var shouldRecord: Bool {
-    processInfo.environment[DecoyHub.Constants.isRecording] == String(true)
+    processInfo.environment[Decoy.Constants.isRecording] == String(true)
   }
 
   /// Makes a recording of the provided data, response, and error to the specifed URL.
@@ -34,9 +34,9 @@ class Recorder: RecorderInterface {
   ///   - response: Optionally, the URL response returned from the call.
   ///   - error: Optionally, the error returned from the call.
   func record(url: URL, data: Data?, response: URLResponse?, error: Error?) {
-    let decoy = Decoy(
+    let decoy = Stub(
       url: url,
-      response: Decoy.Response(
+      response: Stub.Response(
         data: data,
         urlResponse: response as? HTTPURLResponse,
         error: nil

@@ -1,7 +1,7 @@
 import Foundation
 
 protocol LoaderInterface {
-  func loadJSON(from url: URL) -> [Decoy]?
+  func loadJSON(from url: URL) -> [Stub]?
 }
 
 /// Simple typealiases used to make this structure cleaner to read.
@@ -27,23 +27,23 @@ struct Loader: LoaderInterface {
   ///   - url: The location at which to look for a JSON file containing ordered, stubbed responses.
   ///
   /// - Returns: An optional array of `Decoy`s, read sequentially from the named JSON.
-  func loadJSON(from url: URL) -> [Decoy]? {
+  func loadJSON(from url: URL) -> [Stub]? {
     guard let data = try? Data(contentsOf: url) else { return nil }
     guard let json = try? JSONSerialization.jsonObject(with: data) as? DecoyArray else { return nil }
 
     return json.compactMap { stubMark(from: $0) }
   }
 
-  private func stubMark(from json: [String: Any]) -> Decoy? {
+  private func stubMark(from json: [String: Any]) -> Stub? {
     guard let urlString = json[Constants.url] as? String else { return nil }
     guard let url = URL(string: urlString) else { return nil }
     guard let stub = json[Constants.stub] as? DecoyDictionary else { return nil }
 
     let data = data(from: stub)
     let urlResponse = urlResponse(to: url, from: stub)
-    let response = Decoy.Response(data: data, urlResponse: urlResponse, error: nil)
+    let response = Stub.Response(data: data, urlResponse: urlResponse, error: nil)
 
-    return Decoy(url: url, response: response)
+    return Stub(url: url, response: response)
   }
 
   private func data(from stub: DecoyDictionary) -> Data? {

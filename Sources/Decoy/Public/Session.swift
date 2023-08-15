@@ -1,26 +1,12 @@
 import Foundation
 
-public protocol SessionInterface {
-  init(stubing: URLSession)
-
-  func dataTask(
-    with request: URLRequest,
-    completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void
-  ) -> URLSessionDataTask
-
-  func dataTask(
-    with url: URL,
-    completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void
-  ) -> URLSessionDataTask
-}
-
 /// A subclass of `URLSession` which injects Decoy's subclassed `URLSessionDataTask` objects.
 public class Session: URLSession, SessionInterface {
   /// The underlying `URLSession` being stubbed.
   let urlSession: URLSession
 
   /// Used to record responses from calls made to this session.
-  var recorder: RecorderInterface = DecoyHub.shared.recorder
+  var recorder: RecorderInterface = Decoy.shared.recorder
 
   /// Initialise a `Session` which wraps another `URLSession` and can stub its data tasks.
   ///
@@ -28,7 +14,7 @@ public class Session: URLSession, SessionInterface {
   ///   - session: The underlying `URLSession` being stubbed.
   ///
   /// - Returns: An instance of `Session` which will stub calls as requested.
-  required public init(stubing session: URLSession = .shared) {
+  required public init(stubbing session: URLSession = .shared) {
     self.urlSession = session
   }
 

@@ -64,7 +64,7 @@ final class DataTaskTests: XCTestCase {
     let url = URL(string: "A")!
     guard let data = try? JSONSerialization.data(withJSONObject: ["A": "B"]) else { return XCTFail(#function) }
     let response = Decoy.Response(data: data, urlResponse: nil, error: nil)
-    DecoyHub.shared.queue.queue(decoy: Decoy(url: URL(string: "A")!, response: response))
+    Decoy.shared.queue.queue(decoy: Decoy(url: URL(string: "A")!, response: response))
 
     let task = MockURLSessionDataTask()
     task.stubbedCurrentRequest = URLRequest(url: url)

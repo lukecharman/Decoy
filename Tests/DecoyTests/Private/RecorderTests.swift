@@ -6,13 +6,13 @@ final class RecorderTests: XCTestCase {
 
   func test_shouldRecord_shouldReadFromProcessInfo_whenTrue() {
     let info = MockProcessInfo()
-    info.stubbedEnvironment = [DecoyHub.Constants.isRecording: String(true)]
+    info.stubbedEnvironment = [Decoy.Constants.isRecording: String(true)]
     XCTAssert(Recorder(processInfo: info).shouldRecord)
   }
 
   func test_shouldRecord_shouldReadFromProcessInfo_whenFalse() {
     let info = MockProcessInfo()
-    info.stubbedEnvironment = [DecoyHub.Constants.isRecording: String(false)]
+    info.stubbedEnvironment = [Decoy.Constants.isRecording: String(false)]
     XCTAssertFalse(Recorder(processInfo: info).shouldRecord)
   }
 

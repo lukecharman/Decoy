@@ -7,7 +7,7 @@ final class WriterTests: XCTestCase {
   func test_write_shouldThrowFilePathNotFound_whenPathIsMissing() {
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
-      DecoyHub.Constants.decoyFilename: "A"
+      Decoy.Constants.decoyFilename: "A"
     ]
 
     XCTAssertThrowsError(try Writer(processInfo: processInfo).write(recordings: [[:]])) { error in
@@ -18,7 +18,7 @@ final class WriterTests: XCTestCase {
   func test_write_shouldThrowFileNameNotFound_whenFileIsMissing() {
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
-      DecoyHub.Constants.decoyPath: "A"
+      Decoy.Constants.decoyPath: "A"
     ]
 
     XCTAssertThrowsError(try Writer(processInfo: processInfo).write(recordings: [[:]])) { error in
@@ -40,8 +40,8 @@ final class WriterTests: XCTestCase {
 
     let processInfo = MockProcessInfo()
     processInfo.stubbedEnvironment = [
-      DecoyHub.Constants.decoyPath: "A",
-      DecoyHub.Constants.decoyFilename: "B"
+      Decoy.Constants.decoyPath: "A",
+      Decoy.Constants.decoyFilename: "B"
     ]
 
     try? Writer(processInfo: processInfo, fileManager: fileManager).write(recordings: [[:]])

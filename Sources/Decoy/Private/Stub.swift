@@ -1,7 +1,7 @@
 import Foundation
 
 /// A data structure representing a stubbed response to a specific URL.
-struct Decoy {
+struct Stub {
   /// The URL to which queries will return the associated stub.
   let url: URL
   /// The stubbed response which will be returned to the `Response`'s `url`.
