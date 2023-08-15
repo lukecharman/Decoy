@@ -22,7 +22,7 @@ struct Stub {
     }
   }
 
-  /// Display the Decoy encoded as a JSON dictionary.
+  /// Returns the Decoy encoded as a JSON dictionary.
   var asJSON: [String: Any] {
     var json = [String: Any]()
 

@@ -10,7 +10,7 @@ private typealias DecoyArray = [DecoyDictionary]
 
 /// Used to load stubs from JSON files, and decode them.
 struct Loader: LoaderInterface {
-
+  
   struct Constants {
     static let url = "url"
     static let stub = "stub"
@@ -20,7 +20,7 @@ struct Loader: LoaderInterface {
     static let httpVersion = "httpVersion"
     static let headerFields = "headerFields"
   }
-
+  
   /// Looks for a JSON file at the given URL, and decodes its contents into an array of stubbed responses.
   ///
   /// - Parameters:
@@ -30,11 +30,13 @@ struct Loader: LoaderInterface {
   func loadJSON(from url: URL) -> [Stub]? {
     guard let data = try? Data(contentsOf: url) else { return nil }
     guard let json = try? JSONSerialization.jsonObject(with: data) as? DecoyArray else { return nil }
-
-    return json.compactMap { stubMark(from: $0) }
+    
+    return json.compactMap { stub(from: $0) }
   }
+}
 
-  private func stubMark(from json: [String: Any]) -> Stub? {
+private extension Loader {
+  func stub(from json: [String: Any]) -> Stub? {
     guard let urlString = json[Constants.url] as? String else { return nil }
     guard let url = URL(string: urlString) else { return nil }
     guard let stub = json[Constants.stub] as? DecoyDictionary else { return nil }
@@ -46,12 +48,12 @@ struct Loader: LoaderInterface {
     return Stub(url: url, response: response)
   }
 
-  private func data(from stub: DecoyDictionary) -> Data? {
+  func data(from stub: DecoyDictionary) -> Data? {
     guard let json = stub[Constants.json] else { return nil }
     return try? JSONSerialization.data(withJSONObject: json)
   }
 
-  private func urlResponse(to url: URL, from stub: DecoyDictionary) -> HTTPURLResponse? {
+  func urlResponse(to url: URL, from stub: DecoyDictionary) -> HTTPURLResponse? {
     HTTPURLResponse(
       url: url,
       statusCode: stub[Constants.statusCode] as? Int ?? 200,
@@ -60,7 +62,7 @@ struct Loader: LoaderInterface {
     )
   }
 
-  private func error(from stub: DecoyDictionary) -> [String: Any]? {
+  func error(from stub: DecoyDictionary) -> [String: Any]? {
     return nil
   }
 }

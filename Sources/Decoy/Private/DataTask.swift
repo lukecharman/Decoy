@@ -19,7 +19,7 @@ class DataTask: URLSessionDataTask {
   ///   - completionHandler: The closure which will be called, with either stubbed or real data.
   ///
   /// - Returns: An instance of `DataTask` which will stub calls if stubbed data exists.
-  init(stubing task: URLSessionDataTask, completionHandler: @escaping CompletionHandler) {
+  init(stubbing task: URLSessionDataTask, completionHandler: @escaping CompletionHandler) {
     self.task = task
     self.completionHandler = completionHandler
   }

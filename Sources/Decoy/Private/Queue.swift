@@ -1,15 +1,24 @@
 import Foundation
 
+/// A protocol that defines the interface for managing queued responses.
 protocol QueueInterface {
+  /// A dictionary that holds queued responses for specific URLs.
   var queuedResponses: [URL: [Stub.Response]] { get set }
 
-  func queue(decoy: Stub)
+  /// Queues a stubbed response to be used later.
+  /// - Parameter stub: The stubbed response to be queued.
+  func queue(stub: Stub)
+
+  /// Dispatches the next queued response for a specific URL.
+  /// - Parameters:
+  ///   - url: The URL for which a response is to be dispatched.
+  ///   - completion: The completion handler to be called after the response is dispatched.
+  /// - Returns: `true` if a queued response was dispatched, `false` otherwise.
   func dispatchNextQueuedResponse(for url: URL, to completion: @escaping DataTask.CompletionHandler) -> Bool
 }
 
 /// Used to queue stubbed responses to calls to various endpoints.
 class Queue: QueueInterface {
-
   /// A set of responses. Calls to URLs matching the keys will sequentially be stubbed with data in the response.
   var queuedResponses = [URL: [Stub.Response]]()
 
@@ -17,13 +26,13 @@ class Queue: QueueInterface {
   /// `URLResponse` and any potential `Error`s, to see how your app handles them.
   ///
   /// - Parameters:
-  ///   - decoy: The `Decoy` containing URL and response information for the stub.
-  func queue(decoy: Stub) {
-    if queuedResponses[decoy.url] == nil {
-      queuedResponses[decoy.url] = []
+  ///   - stub: The `Stub` containing URL and response information for the stub.
+  func queue(stub: Stub) {
+    if queuedResponses[stub.url] == nil {
+      queuedResponses[stub.url] = []
     }
 
-    queuedResponses[decoy.url]?.insert(decoy.response, at: 0)
+    queuedResponses[stub.url]?.insert(stub.response, at: 0)
   }
 
   /// Dispatches the next queued response for the provided URL. Checks the queued response array for responses
@@ -41,5 +50,4 @@ class Queue: QueueInterface {
 
     return true
   }
-
 }

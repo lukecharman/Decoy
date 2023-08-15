@@ -38,7 +38,7 @@ public class Session: URLSession, SessionInterface {
       completionHandler(data, response, error)
     })
 
-    return DataTask(stubing: superTask, completionHandler: completionHandler)
+    return DataTask(stubbing: superTask, completionHandler: completionHandler)
   }
 
   /// Create a `DecoyURLSessionDataTask` (as a standard `URLSessionDataTask`)
@@ -54,7 +54,7 @@ public class Session: URLSession, SessionInterface {
     completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void
   ) -> URLSessionDataTask {
     DataTask(
-      stubing: urlSession.dataTask(with: url, completionHandler: { [weak self] data, response, error in
+      stubbing: urlSession.dataTask(with: url, completionHandler: { [weak self] data, response, error in
         guard let self else { return }
         if self.recorder.shouldRecord {
           self.recorder.record(url: url, data: data, response: response, error: error)

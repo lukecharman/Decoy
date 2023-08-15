@@ -1,6 +1,6 @@
 import Foundation
 
-/// The `Decoy` enum is the core of the library, and allows you to queue stubbed responses
+/// The `Decoy` class is the core of the library, and allows you to queue stubbed responses
 /// to calls to specific endpoints via the `queue` and `queueValidResponse` methods.
 public class Decoy {
   public struct Constants {
@@ -33,7 +33,7 @@ public class Decoy {
     guard let json = loader.loadJSON(from: url) else { return }
 
     json.forEach {
-      queue.queue(decoy: Stub(url: $0.url, response: $0.response))
+      queue.queue(stub: Stub(url: $0.url, response: $0.response))
     }
   }
 
@@ -46,10 +46,10 @@ public class Decoy {
   public var session: SessionInterface?
 
   /// A queue, handling the management of responses into and out of the response queue.
-  var queue: QueueInterface = Queue()
+  private var queue: QueueInterface = Queue()
 
   /// A loader, used to read data from a JSON stub file and parse it into a stubbed response.
-  var loader: LoaderInterface = Loader()
+  private var loader: LoaderInterface = Loader()
 
   /// A recorder, used to write recorded stubs out to disk.
   var recorder: RecorderInterface = Recorder()
