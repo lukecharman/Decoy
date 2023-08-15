@@ -1,11 +1,21 @@
 import Foundation
 
+/// Enum listing modes in which tests can be run.
+public enum DecoyTestMode: String {
+  /// Stubs will be captured and recorded. Tests will always fail in this mode.
+  case recording
+  /// Stubs will be used where provided, and live calls made where not provided.
+  case stubbing
+  /// Stubs will be ignored, and live network requests will be made throughout.
+  case live
+}
+
 /// The `Decoy` class is the core of the library, and allows you to queue stubbed responses
 /// to calls to specific endpoints via the `queue` and `queueValidResponse` methods.
 public class Decoy {
   public struct Constants {
     public static let isXCUI = "DECOY_IS_XCUI"
-    public static let isRecording = "DECOY_IS_RECORDING"
+    public static let decoyMode = "DECOY_MODE"
     public static let decoyPath = "DECOY_PATH"
     public static let decoyFilename = "DECOY_FILENAME"
     public static let decoysFolder = "__Decoys__"

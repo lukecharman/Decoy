@@ -23,7 +23,15 @@ class Recorder: RecorderInterface {
   /// Whether or not the app is running in the context of recording tests, as determined by
   /// the provided `ProcessInfo` object's launch environment..
   var shouldRecord: Bool {
-    processInfo.environment[Decoy.Constants.isRecording] == String(true)
+    guard let modeString = processInfo.environment[Decoy.Constants.decoyMode] else {
+      return false
+    }
+
+    guard let modeType = DecoyTestMode(rawValue: modeString) else {
+      return false
+    }
+
+    return modeType == .recording
   }
 
   /// Makes a recording of the provided data, response, and error to the specifed URL.
