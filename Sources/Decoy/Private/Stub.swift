@@ -1,29 +1,41 @@
 import Foundation
 
 /// A data structure representing a stubbed response to a specific URL.
-struct Stub {
+public struct Stub {
   /// The URL to which queries will return the associated stub.
-  let url: URL
+  public let url: URL
   /// A timestamp for when this stub was recorded.
-  let recordedAt: String
+  public let recordedAt: String
   /// An optional timestamp after which the stub should be considered invalid or expired.
-  let expiresAt: String?
+  public let expiresAt: String?
   /// The stubbed response which will be returned to the `Response`'s `url`.
-  let response: Response
+  public let response: Response
 
   /// Packages the different parts of a stubbed response.
-  struct Response {
+  public struct Response {
     /// The data returned.
-    let data: Data?
+    public let data: Data?
     /// The HTTP URL response of the stub.
-    let urlResponse: HTTPURLResponse?
+    public let urlResponse: HTTPURLResponse?
     /// A dictionary containing error information that the stub can return if present.
-    let error: [String: Any]?
+    public let error: [String: Any]?
     /// The data converted to JSON.
-    var json: Any? {
+    public var json: Any? {
       guard let data else { return nil }
       return try? JSONSerialization.jsonObject(with: data)
     }
+  }
+
+  public var hasExpired: Bool {
+    guard let expiresAt else {
+      return false
+    }
+
+    guard let date = ISO8601DateFormatter().date(from: expiresAt) else {
+      return false
+    }
+
+    return date > Date()
   }
 
   /// Returns the Decoy encoded as a JSON dictionary.
