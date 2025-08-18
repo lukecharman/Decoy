@@ -48,6 +48,14 @@ public struct Stub {
       case .signature(let signature): signature.description
       }
     }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+      return lhs.stringValue == rhs.stringValue
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(stringValue)
+    }
   }
 
   /// The identifier for this stub, used to match requests.

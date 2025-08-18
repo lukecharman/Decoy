@@ -37,6 +37,7 @@ public struct GraphQLSignature: Codable, CustomStringConvertible, Hashable {
   /// in mocking frameworks. Variables are concatenated as key-value pairs separated by underscores.
   public var description: String {
     let formattedVariables = variables
+      .sorted(by: { $0.key < $1.key })
       .map { "\($0.key)-\($0.value.description)" }
       .joined(separator: "_")
     return "\(operationName)_\(formattedVariables)"
