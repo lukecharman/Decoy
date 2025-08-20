@@ -41,6 +41,7 @@ public class Queue: QueueInterface {
   /// Each URL key stores an array of responses, where the most recent response (inserted last)
   /// is returned first when requested.
   public var queuedResponses = [Stub.Identifier: [Stub.Response]]()
+  public var helperQueuedResponses = [Stub.Identifier: [Stub.Response]]()
 
   private let isXCUI: Bool
 
@@ -59,9 +60,11 @@ public class Queue: QueueInterface {
   public func queue(stub: Stub) {
     if queuedResponses[stub.identifier] == nil {
       queuedResponses[stub.identifier] = []
+      helperQueuedResponses[stub.identifier] = []
     }
     // Insert the new response at the beginning to maintain LIFO order.
     queuedResponses[stub.identifier]?.insert(stub.response, at: 0)
+    helperQueuedResponses[stub.identifier]?.insert(stub.response, at: 0)
   }
 
   /// Synchronously retrieves and removes the next queued response for a given URL.
@@ -79,7 +82,7 @@ public class Queue: QueueInterface {
         logger.info("Providing decoy for \(url)")
         return stub
       } else {
-        logger.warning("No decoy was queued for \(url)")
+        debugMissingIdentifier(identifier)
         return nil
       }
     } else if case .signature(let graphQLSignature) = identifier {
@@ -87,12 +90,69 @@ public class Queue: QueueInterface {
         logger.info("Providing decoy for \(graphQLSignature)")
         return stub
       } else {
-        logger.warning("No decoy was queued for \(graphQLSignature)")
+        debugMissingIdentifier(identifier)
         return nil
       }
     } else {
       return nil
     }
+  }
+
+  func debugMissingIdentifier(_ identifier: Stub.Identifier) {
+      var warningMessage = ""
+      switch identifier {
+      case .url(let url):
+          warningMessage += "No decoy was queued for url: \(url) - "
+          if let count = helperQueuedResponses[identifier]?.count {
+              warningMessage += "Mocks for signature were present but already consumed. | Initial queued count: \(count)"
+          }
+      case .signature(let graphQLSignature):
+          warningMessage += "No decoy was queued for signature: \(graphQLSignature) - - - "
+          if let count = helperQueuedResponses[identifier]?.count {
+              warningMessage += "Mocks for signature were present but already consumed. | Initial queued count: \(count)"
+          } else {
+              let possibleMisses = helperQueuedResponses.keys.filter { id in
+                  switch id {
+                  case .signature:
+                      if id.stringValue == identifier.stringValue {
+                          return true
+                      }
+                      return false
+                  case .url:
+                      return false
+                  }
+              }
+
+              if possibleMisses.isEmpty {
+                warningMessage += "No similar mocks found in queue to compare."
+              }
+
+              possibleMisses.forEach { id in
+                  switch id {
+                  case .signature(let queuedGraphQLSignature):
+                      if queuedGraphQLSignature.endpoint != graphQLSignature.endpoint {
+                          warningMessage +=
+                          "ENDPOINT MISMATCH: EXPECTED: \(graphQLSignature.endpoint) | QUEUED: \(queuedGraphQLSignature.endpoint)"
+                      }
+                      if queuedGraphQLSignature.operationName != graphQLSignature.operationName {
+                          warningMessage +=
+                          "OPERATION NAME MISMATCH: EXPECTED: \(graphQLSignature.operationName) | QUEUED: \(queuedGraphQLSignature.operationName)"
+                      }
+                      if queuedGraphQLSignature.variables != graphQLSignature.variables {
+                          warningMessage +=
+                          "VARIABLES MISMATCH: EXPECTED: \(graphQLSignature.variables) | QUEUED: \(queuedGraphQLSignature.variables)"
+                      }
+                      if queuedGraphQLSignature.query != graphQLSignature.query {
+                          warningMessage +=
+                          "QUERY MISMATCH: EXPECTED: \(graphQLSignature.query) | QUEUED: \(queuedGraphQLSignature.query)"
+                      }
+                  case .url:
+                      break
+                  }
+              }
+          }
+      }
+      logger.warning(warningMessage)
   }
 
   /**
