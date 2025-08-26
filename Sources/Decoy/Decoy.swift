@@ -214,7 +214,7 @@ extension Decoy {
       sharedMocksURL.safeAppend(path: "shared.json")
 
       loader.loadJSON(from: sharedMocksURL)?.forEach { stub in
-        queue.queue(stub: stub)
+        queue.queue(stub: stub, origin: .shared)
         logInfo("setUp: Queued shared decoy for \(stub.identifier)")
       }
     } else {
@@ -223,7 +223,7 @@ extension Decoy {
 
     /// Queue each loaded test-specific stub for later retrieval.
     loader.loadJSON(from: testSpecificMocksURL)?.forEach { stub in
-      queue.queue(stub: stub)
+      queue.queue(stub: stub, origin: .specific)
       logInfo("setUp: Queued decoy for \(stub.identifier)")
     }
   }
