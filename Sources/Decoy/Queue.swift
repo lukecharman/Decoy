@@ -15,7 +15,7 @@ public protocol QueueInterface {
   ///
   /// - Parameter Stub: A `Stub` instance containing both the URL and its associated response.
   ///   The response is added to the queue for that URL.
-  func queue(stub: Stub)
+  func queue(stub: Stub, origin: Queue.ResponseOrigin)
 
   /// Synchronously retrieves and removes the next queued response for a given URL.
   ///
@@ -36,12 +36,17 @@ public protocol QueueInterface {
 /// This class implements `QueueInterface` and stores mock responses in a dictionary keyed by URL.
 /// When a network request is intercepted, the next mocked response (if any) is returned.
 public class Queue: QueueInterface {
+  public enum ResponseOrigin: String {
+    case specific = "specific"
+    case shared = "shared"
+  }
   /// A dictionary mapping URLs to an array of `Stub.Response` objects.
   ///
   /// Each URL key stores an array of responses, where the most recent response (inserted last)
   /// is returned first when requested.
   public var queuedResponses = [Stub.Identifier: [Stub.Response]]()
-  public var helperQueuedResponses = [Stub.Identifier: [Stub.Response]]()
+  private var initialSpecificQueuedResponses = [Stub.Identifier: [Stub.Response]]()
+  private var initialSharedQueuedResponses = [Stub.Identifier: [Stub.Response]]()
 
   private let isXCUI: Bool
 
@@ -57,14 +62,19 @@ public class Queue: QueueInterface {
   /// - Parameter Stub: A `Stub` instance that contains the URL and the associated response.
   ///   If no responses exist for that URL, an array is created, and then the response is inserted
   ///   at the beginning of the array to maintain a LIFO order.
-  public func queue(stub: Stub) {
-    if queuedResponses[stub.identifier] == nil {
-      queuedResponses[stub.identifier] = []
-      helperQueuedResponses[stub.identifier] = []
+  public func queue(stub: Stub, origin: ResponseOrigin) {
+    queuedResponses[stub.identifier, default: []].insert(stub.response, at: 0)
+
+    queue(stub, in: origin)
+  }
+
+  private func queue(_ stub: Stub, in origin: ResponseOrigin) {
+    switch origin {
+    case .shared:
+      initialSharedQueuedResponses[stub.identifier, default: []].insert(stub.response, at: 0)
+    case .specific:
+      initialSpecificQueuedResponses[stub.identifier, default: []].insert(stub.response, at: 0)
     }
-    // Insert the new response at the beginning to maintain LIFO order.
-    queuedResponses[stub.identifier]?.insert(stub.response, at: 0)
-    helperQueuedResponses[stub.identifier]?.insert(stub.response, at: 0)
   }
 
   /// Synchronously retrieves and removes the next queued response for a given URL.
@@ -123,58 +133,96 @@ public class Queue: QueueInterface {
   */
   private func logMissingIdentifier(_ identifier: Stub.Identifier) {
     var warningMessage = ""
+
     switch identifier {
     case .url(let url):
-      warningMessage += "No decoy was queued for url: \(url)  - - - "
-      if let count = helperQueuedResponses[identifier]?.count {
-        warningMessage += "Mocks for signature were present but already consumed. | Initial queued count: \(count)"
-      }
+      warningMessage += "No decoy was queued for url: \(url) | "
     case .signature(let graphQLSignature):
-      warningMessage += "No decoy was queued for signature: \(graphQLSignature) - - - "
-      if let count = helperQueuedResponses[identifier]?.count {
-        warningMessage += "Mocks for signature were present but already consumed. | Initial queued count: \(count)"
-      } else {
-        let possibleMisses = helperQueuedResponses.keys.filter { id in
-          switch id {
-          case .signature:
-            if id.stringValue == identifier.stringValue {
-              return true
-            }
-            return false
-          case .url:
-            return false
-          }
-        }
+      warningMessage += "No decoy was queued for signature: \(graphQLSignature) | "
+    }
 
-        if possibleMisses.isEmpty {
-          warningMessage += "No similar mocks found in queue to compare."
-        }
+    appendCountInQueue(identifier: identifier, origin: .shared, log: &warningMessage)
+    appendCountInQueue(identifier: identifier, origin: .specific, log: &warningMessage)
 
-        possibleMisses.forEach { id in
-          switch id {
-          case .signature(let queuedGraphQLSignature):
-            if queuedGraphQLSignature.endpoint != graphQLSignature.endpoint {
-              warningMessage +=
-              "ENDPOINT MISMATCH: EXPECTED: \(graphQLSignature.endpoint) | QUEUED: \(queuedGraphQLSignature.endpoint)"
-            }
-            if queuedGraphQLSignature.operationName != graphQLSignature.operationName {
-              warningMessage +=
-              "OPERATION NAME MISMATCH: EXPECTED: \(graphQLSignature.operationName) | QUEUED: \(queuedGraphQLSignature.operationName)"
-            }
-            if queuedGraphQLSignature.variables != graphQLSignature.variables {
-              warningMessage +=
-              "VARIABLES MISMATCH: EXPECTED: \(graphQLSignature.variables) | QUEUED: \(queuedGraphQLSignature.variables)"
-            }
-            if queuedGraphQLSignature.query != graphQLSignature.query {
-              warningMessage +=
-              "QUERY MISMATCH: EXPECTED: \(graphQLSignature.query) | QUEUED: \(queuedGraphQLSignature.query)"
-            }
-          case .url:
-            break
-          }
+    appendPossibleMisses(identifier, origin: .shared, log: &warningMessage)
+    appendPossibleMisses(identifier, origin: .specific, log: &warningMessage)
+
+    logger.warning(warningMessage)
+  }
+
+  private func appendCountInQueue(
+    identifier: Stub.Identifier,
+    origin: ResponseOrigin,
+    log: inout String
+  ) {
+    let queue = getQueue(for: origin)
+
+    if let count = queue[identifier]?.count {
+      log += "Mocks were present but already consumed in \(origin.rawValue) queue. Initial count: \(count) "
+    }
+  }
+
+  private func appendPossibleMisses(
+    _ identifier: Stub.Identifier,
+    origin: ResponseOrigin,
+    log: inout String
+  ) {
+    guard let graphQLSignature = getSignature(for: identifier) else {
+      return
+    }
+
+    let queue = getQueue(for: origin)
+
+    let possibleMisses = queue.keys.filter { id in
+      switch id {
+      case .signature:
+        if id.stringValue == identifier.stringValue {
+          return true
         }
+        return false
+      case .url:
+        return false
       }
     }
-    logger.warning(warningMessage)
+
+    if possibleMisses.isEmpty {
+      log += "No similar mocks found in \(origin.rawValue) queue to compare | "
+    }
+
+    possibleMisses.forEach { id in
+      switch id {
+      case .signature(let queuedGraphQLSignature):
+        if queuedGraphQLSignature.endpoint != graphQLSignature.endpoint {
+          log +=
+          "ENDPOINT MISMATCH IN \(origin.rawValue.uppercased()): EXPECTED: \(graphQLSignature.endpoint) | QUEUED: \(queuedGraphQLSignature.endpoint)"
+        }
+        if queuedGraphQLSignature.query != graphQLSignature.query {
+          log +=
+          "QUERY MISMATCH IN \(origin.rawValue.uppercased()): EXPECTED: \(graphQLSignature.query) | QUEUED: \(queuedGraphQLSignature.query)"
+        }
+      case .url:
+        break
+      }
+    }
+  }
+}
+
+extension Queue {
+  private func getSignature(for identifier: Stub.Identifier) -> GraphQLSignature? {
+    switch identifier {
+    case .signature(let signature):
+      return signature
+    case .url:
+      return nil
+    }
+  }
+
+  private func getQueue(for origin: ResponseOrigin) -> [Stub.Identifier : [Stub.Response]] {
+    switch origin {
+    case .shared:
+      return initialSharedQueuedResponses
+    case .specific:
+      return initialSpecificQueuedResponses
+    }
   }
 }

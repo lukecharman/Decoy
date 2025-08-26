@@ -48,6 +48,16 @@ public struct Stub {
       case .signature(let signature): signature.description
       }
     }
+
+    /// A readable string representation of the type of Identifier.
+    ///
+    /// This string is used for logging.
+    var typeDescription: String {
+      switch self {
+      case .url: "url"
+      case .signature: "signature"
+      }
+    }
   }
 
   /// The identifier for this stub, used to match requests.
